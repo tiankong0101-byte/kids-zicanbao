@@ -1,0 +1,26 @@
+---
+word: "fixed"
+zh: "确定的"
+fullZh: "确定的"
+ipa: "/fɪkst/"
+partOfSpeech: "adj"
+grade: 6
+semester: 2
+unit: 3
+unitId: "u3"
+unitTitle: "Unit 3"
+audioUrl: "/audio/kids-english/words/g6/s2/u3/fixed.mp3"
+exampleEn: ""
+exampleZh: ""
+confusionWith: []
+page: 0
+key: false
+curriculum: "人教版"
+curriculumCode: "other"
+---
+
+# fixed
+
+**中文**：确定的
+
+**音标**：`/fɪkst/`

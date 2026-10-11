@@ -1,0 +1,253 @@
+---
+import Layout from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+// 读取所有单词，按年级聚合统计
+const words = await getCollection('words');
+
+// 按 grade + semester 分组
+const groups = new Map<string, { grade: number; semester: number; count: number; units: Set<number> }>();
+for (const w of words) {
+  const key = `${w.data.grade}-${w.data.semester}`;
+  if (!groups.has(key)) {
+    groups.set(key, { grade: w.data.grade, semester: w.data.semester, count: 0, units: new Set() });
+  }
+  const g = groups.get(key)!;
+  g.count++;
+  g.units.add(w.data.unit);
+}
+
+// 转数组，按年级+上下册排序
+const semesters = Array.from(groups.values()).sort((a, b) => {
+  if (a.grade !== b.grade) return a.grade - b.grade;
+  return a.semester - b.semester;
+});
+
+const gradeNames = ['', '一年级', '二年级', '三年级', '四年级', '五年级', '六年级'];
+const semesterNames = ['', '上册', '下册'];
+
+const totalWords = words.length;
+const totalUnits = semesters.reduce((sum, s) => sum + s.units.size, 0);
+const gradesCovered = new Set(semesters.map(s => s.grade)).size;
+---
+
+<Layout title="小学英语单词 · 人教版 PEP 教材配套学习" description="基于人教版 PEP 小学英语教材，覆盖一年级到六年级全部单词，配合自然拼读、国际音标、跟读对比，帮助一年级新生打零起步。">
+
+  <!-- Hero -->
+  <section class="kids-hero">
+    <div class="kids-hero-inner fade-up">
+      <span class="kids-badge">📚 一年级新生 · 0 起步友好</span>
+      <h1>🌱 <span class="grad">人教版 PEP 单词</span> 学习台</h1>
+      <p>覆盖一年级到六年级全部 <strong>{totalWords}</strong> 个单词 · {totalUnits} 个单元 · {gradesCovered} 个年级</p>
+      <p class="kids-sub">严格按教材单元顺序 · 自然拼读 + 国际音标双标 · edge-tts 标准美音</p>
+    </div>
+  </section>
+
+  <!-- 年级选择 -->
+  <section class="kids-grades">
+    <div class="kids-grades-grid">
+      {semesters.map((s) => (
+        <a class="grade-card fade-up" href={`/g${s.grade}-s${s.semester}/`}>
+          <div class="grade-emoji">{s.grade === 1 ? '🐣' : s.grade === 2 ? '🐤' : s.grade === 3 ? '🐥' : s.grade === 4 ? '🐔' : s.grade === 5 ? '🦅' : '🦉'}</div>
+          <div class="grade-title">{gradeNames[s.grade]}{semesterNames[s.semester]}</div>
+          <div class="grade-meta">
+            <span class="meta-tag">{s.count} 词</span>
+            <span class="meta-tag">{s.units.size} 单元</span>
+          </div>
+          <div class="grade-arrow">开始学习 →</div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- 学习方法 -->
+  <section class="kids-features">
+    <div class="section-header fade-up">
+      <h2>🎯 <span class="grad">三步学习法</span></h2>
+      <p>听 → 拼 → 读，一年级新生 0 起步</p>
+    </div>
+    <div class="kids-features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-num">1</div>
+        <h3>听单词</h3>
+        <p>标准美音 edge-tts 朗读，点一下就发音，孩子跟读模仿语调</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-num">2</div>
+        <h3>看拼读</h3>
+        <p>26 字母自然拼读规则 + 国际音标双标，看见单词会读会拼</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-num">3</div>
+        <h3>跟我读</h3>
+        <p>浏览器录音 + faster-whisper 本地识别，对比标准发音打分</p>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .kids-hero {
+    padding: 8rem 2rem 3rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .kids-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 1rem;
+  }
+
+  .kids-badge {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    border-radius: 999px;
+    background: rgba(108, 140, 255, 0.15);
+    border: 1px solid rgba(108, 140, 255, 0.4);
+    color: #6C8CFF;
+    font-size: 0.92rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .kids-sub {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+
+  .kids-grades {
+    padding: 2rem 2rem 4rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .kids-grades-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .grade-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s, border-color 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grade-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, var(--glow-purple), transparent 70%);
+    opacity: 0.4;
+  }
+
+  .grade-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-glow);
+  }
+
+  .grade-emoji {
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+
+  .grade-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    position: relative;
+  }
+
+  .grade-meta {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+
+  .meta-tag {
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(108, 140, 255, 0.12);
+    border: 1px solid rgba(108, 140, 255, 0.3);
+    color: #6C8CFF;
+    font-size: 0.82rem;
+  }
+
+  .grade-arrow {
+    color: #6C8CFF;
+    font-size: 0.9rem;
+    position: relative;
+  }
+
+  .kids-features {
+    padding: 2rem 2rem 5rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .kids-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.8rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .feature-num {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 50%;
+    background: var(--grad-text);
+    color: #08090a;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .feature-card p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 768px) {
+    .kids-features-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

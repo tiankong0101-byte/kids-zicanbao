@@ -1,0 +1,26 @@
+---
+word: "read"
+zh: "阅读"
+fullZh: "阅读"
+ipa: "/riːd/"
+partOfSpeech: "n"
+grade: 5
+semester: 1
+unit: 2
+unitId: "u2"
+unitTitle: "Unit 2"
+audioUrl: "/audio/kids-english/words/g5/s1/u2/read.mp3"
+exampleEn: ""
+exampleZh: ""
+confusionWith: []
+page: 0
+key: false
+curriculum: "人教版"
+curriculumCode: "other"
+---
+
+# read
+
+**中文**：阅读
+
+**音标**：`/riːd/`

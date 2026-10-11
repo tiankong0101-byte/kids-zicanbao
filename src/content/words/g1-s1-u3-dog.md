@@ -1,0 +1,30 @@
+---
+word: "dog"
+zh: "狗"
+fullZh: "狗"
+ipa: "/dɔɡ/"
+partOfSpeech: ""
+grade: 1
+semester: 1
+unit: 3
+unitId: "u3"
+unitTitle: "Animals · 动物"
+audioUrl: "/audio/kids-english/words/g1/s1/u3/dog.mp3"
+exampleEn: ""
+exampleZh: ""
+confusionWith: []
+page: 22
+key: true
+curriculum: "人教版（一年级起点）"
+curriculumCode: "pep1"
+---
+
+# dog
+
+**中文**：狗
+
+**音标**：`/dɔɡ/`
+
+**教材页码**：22
+
+⭐ **重点词汇**

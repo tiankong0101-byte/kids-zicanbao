@@ -1,0 +1,187 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = '人教版 PEP 小学英语单词表，按年级单元分类，含自然拼读与国际音标' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="keywords" content="AI提示词,AI漫剧,AI短剧素材,提示词包,电商商品图提示词,小红书文案模板,古风人物提示词" />
+    <meta name="robots" content="index, follow" />
+    <!-- 百度站长验证（2026-08-08） -->
+    <meta name="baidu-site-verification" content="codeva-nIqarjE7rq" />
+    <!-- 头条搜索站长平台验证（2026-09-22） -->
+    <meta name="bytedance-verification-code" content="cVjlMuxwc010mNYm4ifL" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={`https://kids.zicanbao.com${Astro.url.pathname}`} />
+    <meta property="og:site_name" content="小学英语单词" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href={`https://kids.zicanbao.com${Astro.url.pathname}`} />
+    <title>{title}</title>
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: '小学英语单词',
+      url: 'https://kids.zicanbao.com',
+      description,
+    })} />
+    <!-- Pagefind 搜索样式（构建时由 pagefind --site dist 生成） -->
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <script src="/pagefind/pagefind-ui.js" defer></script>
+    <!-- Cloudflare Web Analytics（2026-08-15 官方统计，token 90eaa0025939402f9d4edcab22924f0c） -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "90eaa0025939402f9d4edcab22924f0c"}'></script>
+    <!-- 不蒜子访问统计（2026-08-15 接入，PV/UV 计数，匿名无个人信息） -->
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <!-- AIGC 元标识（参考网信办《生成式人工智能服务管理暂行办法》） -->
+    <meta name="ai-content-declaration" content="本站在 AI 辅助生成的文章中显著标识 AIGC 内容，并保留编辑日志留证。" />
+    <link rel="alternate" type="text/html" href="/legal/aigc-notice" title="AIGC 内容标识说明" />
+  </head>
+  <body>
+    <!-- 星空背景 -->
+    <div class="cosmic-bg" aria-hidden="true">
+      <div class="stars"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <header class="site-header">
+      <nav class="nav-container">
+        <a href="/" class="logo">
+          <span class="logo-mark">🌱</span>
+          <span>小学英语单词</span>
+        </a>
+
+        <!-- 搜索框（WordPress 搜索机制，Pagefind 驱动） -->
+        <button class="nav-toggle" id="navToggle" aria-label="菜单" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="nav-search" id="searchBox" aria-label="站内搜索"></div>
+
+        <ul class="nav-links" id="navLinks">
+          <li><a href="/">首页</a></li>
+          <li><a href="/g1-s1/">一年级上册</a></li>
+          <li><a href="/g3-s1/">三年级上册</a></li>
+          <li><a href="/g6-s2/">六年级下册</a></li>
+          <li><a href="https://zicanbao.com/" class="nav-cta">AI资产包</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <!-- 页面内容 -->
+    <slot />
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+      <p>© 2026 小学英语单词 · 人教版 PEP 教材配套学习 · <a href="https://zicanbao.com/">AI资产包（主站）</a></p>
+      <div style="margin-top: 0.8rem;">
+        <a href="/">首页</a>
+        <a href="/g1-s1/">一年级上册</a>
+        <a href="/g1-s2/">一年级下册</a>
+        <a href="/g2-s1/">二年级上册</a>
+        <a href="/g2-s2/">二年级下册</a>
+        <a href="/g3-s1/">三年级上册</a>
+        <a href="/g3-s2/">三年级下册</a>
+        <a href="/g4-s1/">四年级上册</a>
+        <a href="/g4-s2/">四年级下册</a>
+        <a href="/g5-s1/">五年级上册</a>
+        <a href="/g5-s2/">五年级下册</a>
+        <a href="/g6-s1/">六年级上册</a>
+        <a href="/g6-s2/">六年级下册</a>
+      </div>
+      <p class="footer-disclaimer">⚠️ 免责声明：本站为个人学习辅助工具，单词表内容源自人教版 PEP 公开教材，版权归原出版社所有，仅供学习参考。</p>
+    </footer>
+
+    <script>
+      // 汉堡菜单切换
+      const toggle = document.getElementById('navToggle');
+      const links = document.getElementById('navLinks');
+
+      if (toggle && links) {
+        toggle.addEventListener('click', () => {
+          const open = links.classList.toggle('open');
+          toggle.classList.toggle('active', open);
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        // 点击链接后关闭菜单
+        links.querySelectorAll('a').forEach((link) => {
+          link.addEventListener('click', () => {
+            links.classList.remove('open');
+            toggle.classList.remove('active');
+          });
+        });
+      }
+
+      // 滚动渐入动画
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+
+      // 移动端下拉菜单：点击展开
+      document.querySelectorAll('.nav-links li').forEach((li) => {
+        const link = li.querySelector('a.has-dropdown');
+        if (link) {
+          link.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+              e.preventDefault();
+              li.classList.toggle('open-dropdown');
+            }
+          });
+        }
+      });
+
+      // Pagefind 搜索初始化（脚本已通过 <script src> 加载）
+      const searchBox = document.getElementById('searchBox');
+      if (searchBox && window.PagefindUI) {
+        new window.PagefindUI({
+          element: searchBox,
+          showSubResults: true,
+          showImages: false,
+          translations: {
+            placeholder: '搜索资产包…',
+            zero_results: '没有找到结果',
+            search: '搜索',
+          },
+        });
+      } else if (searchBox) {
+        // 脚本还没加载完（defer 顺序），等 DOMContentLoaded 后再试
+        window.addEventListener('DOMContentLoaded', () => {
+          if (window.PagefindUI) {
+            new window.PagefindUI({
+              element: searchBox,
+              showSubResults: true,
+              showImages: false,
+              translations: {
+                placeholder: '搜索资产包…',
+                zero_results: '没有找到结果',
+                search: '搜索',
+              },
+            });
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

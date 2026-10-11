@@ -1,0 +1,26 @@
+---
+word: "pack"
+zh: "包装"
+fullZh: "包装"
+ipa: "/pæk/"
+partOfSpeech: "n"
+grade: 4
+semester: 2
+unit: 4
+unitId: "u4"
+unitTitle: "Unit 4"
+audioUrl: "/audio/kids-english/words/g4/s2/u4/pack.mp3"
+exampleEn: ""
+exampleZh: ""
+confusionWith: []
+page: 0
+key: false
+curriculum: "人教版"
+curriculumCode: "other"
+---
+
+# pack
+
+**中文**：包装
+
+**音标**：`/pæk/`

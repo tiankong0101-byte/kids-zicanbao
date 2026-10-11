@@ -1,0 +1,179 @@
+---
+import Layout from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const words = await getCollection('words');
+  const map = new Map<string, { grade: number; semester: number; title: string; count: number; units: Set<number> }>();
+
+  for (const w of words) {
+    const key = `${w.data.grade}-${w.data.semester}`;
+    if (!map.has(key)) {
+      map.set(key, { grade: w.data.grade, semester: w.data.semester, title: '', count: 0, units: new Set() });
+    }
+    const g = map.get(key)!;
+    g.count++;
+    g.units.add(w.data.unit);
+  }
+
+  const gradeNames = ['', '一年级', '二年级', '三年级', '四年级', '五年级', '六年级'];
+  const semesterNames = ['', '上册', '下册'];
+
+  return Array.from(map.values()).map((g) => ({
+    params: { gradeSem: `g${g.grade}-s${g.semester}` },
+    props: {
+      grade: g.grade,
+      semester: g.semester,
+      title: `${gradeNames[g.grade]}${semesterNames[g.semester]}`,
+      units: Array.from(g.units).sort((a, b) => a - b),
+    },
+  }));
+}
+
+const { grade, semester, title, units } = Astro.props;
+
+// 统计每单元词数
+const allWords = await getCollection('words');
+const unitStats = new Map<number, number>();
+for (const w of allWords) {
+  if (w.data.grade === grade && w.data.semester === semester) {
+    unitStats.set(w.data.unit, (unitStats.get(w.data.unit) ?? 0) + 1);
+  }
+}
+
+const semesterName = semester === 1 ? '上册' : '下册';
+---
+
+<Layout title={`${title} · 小学英语 PEP`} description={`人教版 PEP 小学英语${title}全部单词，按单元分类，含自然拼读和国际音标`}>
+
+  <!-- 面包屑 -->
+  <nav class="breadcrumb">
+    <a href="/">小学英语</a> <span>/</span>
+    <span class="current">{title}</span>
+  </nav>
+
+  <!-- 头部 -->
+  <section class="sem-header fade-up">
+    <div class="sem-header-inner">
+      <h1>📖 <span class="grad">{title}</span></h1>
+      <p>共 {units.length} 个单元 · {Array.from(unitStats.values()).reduce((a, b) => a + b, 0)} 个单词</p>
+    </div>
+  </section>
+
+  <!-- 单元列表 -->
+  <section class="sem-units">
+    <div class="units-grid">
+      {units.map((u) => {
+        const unitWords = allWords.filter((w) => w.data.grade === grade && w.data.semester === semester && w.data.unit === u);
+        const firstThree = unitWords.slice(0, 3).map(w => w.data.word);
+        return (
+          <a class="unit-card fade-up" href={`/g${grade}-s${semester}-u${u}/`}>
+            <div class="unit-num">Unit {u}</div>
+            <div class="unit-meta">
+              <span class="meta-tag">📚 {unitStats.get(u) ?? 0} 词</span>
+            </div>
+            <div class="unit-preview">
+              {firstThree.join(' · ')}
+            </div>
+            <div class="unit-arrow">开始学习 →</div>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .breadcrumb {
+    max-width: var(--max-width);
+    margin: 5.5rem auto 0;
+    padding: 0 2rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .breadcrumb a { color: #6C8CFF; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .current { color: var(--text-secondary); }
+
+  .sem-header {
+    padding: 2rem 2rem 1rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .sem-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 0.6rem;
+  }
+
+  .sem-units {
+    padding: 2rem 2rem 5rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .units-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .unit-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 1.8rem 1.5rem;
+    backdrop-filter: blur(10px);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s, border-color 0.25s;
+  }
+
+  .unit-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-glow);
+  }
+
+  .unit-num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    background: var(--grad-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .unit-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .meta-tag {
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(108, 140, 255, 0.12);
+    border: 1px solid rgba(108, 140, 255, 0.3);
+    color: #6C8CFF;
+    font-size: 0.82rem;
+  }
+
+  .unit-preview {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .unit-arrow {
+    color: #6C8CFF;
+    font-size: 0.9rem;
+  }
+</style>

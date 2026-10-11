@@ -1,0 +1,26 @@
+---
+word: "vacation"
+zh: "假期"
+fullZh: "假期"
+ipa: "/veɪˈkeɪʃn; vəˈkeɪʃn/"
+partOfSpeech: "n"
+grade: 5
+semester: 2
+unit: 3
+unitId: "u3"
+unitTitle: "Unit 3"
+audioUrl: "/audio/kids-english/words/g5/s2/u3/vacation.mp3"
+exampleEn: ""
+exampleZh: ""
+confusionWith: []
+page: 0
+key: false
+curriculum: "人教版"
+curriculumCode: "other"
+---
+
+# vacation
+
+**中文**：假期
+
+**音标**：`/veɪˈkeɪʃn; vəˈkeɪʃn/`

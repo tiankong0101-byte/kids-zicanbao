@@ -1,0 +1,244 @@
+---
+import Layout from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const words = await getCollection('words');
+  const map = new Map<string, { grade: number; semester: number; unit: number }>();
+
+  for (const w of words) {
+    const key = `${w.data.grade}-${w.data.semester}-${w.data.unit}`;
+    if (!map.has(key)) {
+      map.set(key, { grade: w.data.grade, semester: w.data.semester, unit: w.data.unit });
+    }
+  }
+
+  const gradeNames = ['', '一年级', '二年级', '三年级', '四年级', '五年级', '六年级'];
+  const semesterNames = ['', '上册', '下册'];
+
+  return Array.from(map.values()).map((g) => ({
+    params: {
+      gradeSem: `g${g.grade}-s${g.semester}`,
+      unit: `u${g.unit}`,
+    },
+    props: {
+      grade: g.grade,
+      semester: g.semester,
+      unit: g.unit,
+      gradeName: gradeNames[g.grade],
+      semesterName: semesterNames[g.semester],
+    },
+  }));
+}
+
+const { grade, semester, unit, gradeName, semesterName } = Astro.props;
+
+// [unit] 路由参数是字符串 "u1"/"u2"/...，提取数字部分
+const unitNum = parseInt(String(unit).replace(/^u/, ''), 10) || 1;
+
+const allWords = await getCollection('words');
+const unitWords = allWords
+  .filter((w) => w.data.grade === grade && w.data.semester === semester && w.data.unit === unitNum)
+  .sort((a, b) => a.slug.localeCompare(b.slug));
+
+// 同年级所有单元（用于切换）
+const allUnitsInGrade = Array.from(new Set(
+  allWords.filter((w) => w.data.grade === grade && w.data.semester === semester).map((w) => w.data.unit)
+)).sort((a, b) => a - b);
+
+const prevUnit = allUnitsInGrade.indexOf(unitNum) > 0 ? allUnitsInGrade[allUnitsInGrade.indexOf(unitNum) - 1] : null;
+const nextUnit = allUnitsInGrade.indexOf(unitNum) < allUnitsInGrade.length - 1 ? allUnitsInGrade[allUnitsInGrade.indexOf(unitNum) + 1] : null;
+---
+
+<Layout title={`${gradeName}${semesterName} Unit ${unitNum} · 小学英语 PEP`} description={`人教版 PEP ${gradeName}${semesterName} Unit ${unitNum} 全部单词`}>
+
+  <nav class="breadcrumb">
+    <a href="/">小学英语</a> <span>/</span>
+    <a href={`/g${grade}-s${semester}/`}>{gradeName}{semesterName}</a> <span>/</span>
+    <span class="current">Unit {unitNum}</span>
+  </nav>
+
+  <section class="unit-header fade-up">
+    <h1>📚 <span class="grad">{gradeName}{semesterName}</span> · Unit {unitNum}</h1>
+    <p>共 {unitWords.length} 个单词</p>
+  </section>
+
+  <section class="words-section">
+    <div class="words-grid">
+      {unitWords.map((w) => (
+        <div class="word-card fade-up">
+          <div class="word-head">
+            <div class="word-text">{w.data.word}</div>
+            <div class="word-zh">{w.data.zh}</div>
+          </div>
+          <div class="word-ipa">{w.data.ipa || '—'}</div>
+          <div class="word-pos">{w.data.partOfSpeech}</div>
+          <div class="word-audio" data-word={w.data.word} data-url={w.data.audioUrl}>
+            <button class="audio-btn" type="button" aria-label="播放发音">
+              🔊
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- 单元切换 -->
+  <section class="unit-nav">
+    {prevUnit && (
+      <a class="nav-btn prev" href={`/g${grade}-s${semester}/u${prevUnit}/`}>← Unit {prevUnit}</a>
+    )}
+    {nextUnit && (
+      <a class="nav-btn next" href={`/g${grade}-s${semester}/u${nextUnit}/`}>Unit {nextUnit} →</a>
+    )}
+  </section>
+
+</Layout>
+
+<script>
+  // 单词卡片点击发音（edge-tts 在线 / 预生成音频）
+  document.querySelectorAll('.audio-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const wrap = btn.closest('[data-word]') as HTMLElement;
+      const url = wrap?.dataset.url;
+      const word = wrap?.dataset.word;
+      if (!word) return;
+      // 优先播放预生成音频
+      if (url && !url.endsWith('/')) {
+        const audio = new Audio(url);
+        audio.play().catch(() => {});
+      } else {
+        // 降级：浏览器 Web Speech API
+        const utter = new SpeechSynthesisUtterance(word);
+        utter.lang = 'en-US';
+        utter.rate = 0.8;
+        speechSynthesis.speak(utter);
+      }
+    });
+  });
+</script>
+
+<style>
+  .breadcrumb {
+    max-width: var(--max-width);
+    margin: 5.5rem auto 0;
+    padding: 0 2rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .breadcrumb a { color: #6C8CFF; text-decoration: none; }
+  .breadcrumb .current { color: var(--text-secondary); }
+
+  .unit-header {
+    padding: 2rem 2rem 1rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .unit-header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .words-section {
+    padding: 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .words-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .word-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 1.2rem 1rem;
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .word-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-glow);
+  }
+
+  .word-head {
+    margin-bottom: 0.5rem;
+  }
+
+  .word-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+  }
+
+  .word-zh {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+  }
+
+  .word-ipa {
+    font-family: 'Times New Roman', serif;
+    color: #6C8CFF;
+    font-size: 0.92rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .word-pos {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-style: italic;
+    margin-bottom: 0.6rem;
+  }
+
+  .audio-btn {
+    background: rgba(108, 140, 255, 0.15);
+    border: 1px solid rgba(108, 140, 255, 0.4);
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    color: #6C8CFF;
+    transition: background 0.2s;
+  }
+
+  .audio-btn:hover {
+    background: rgba(108, 140, 255, 0.3);
+  }
+
+  .unit-nav {
+    padding: 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .nav-btn {
+    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: transform 0.2s;
+  }
+
+  .nav-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .nav-btn.next {
+    margin-left: auto;
+  }
+</style>
