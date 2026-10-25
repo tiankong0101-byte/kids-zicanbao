@@ -67,7 +67,7 @@ const semesterName = semester === 1 ? '上册' : '下册';
         const unitWords = allWords.filter((w) => w.data.grade === grade && w.data.semester === semester && w.data.unit === u);
         const firstThree = unitWords.slice(0, 3).map(w => w.data.word);
         return (
-          <a class="unit-card fade-up" href={`/g${grade}-s${semester}-u${u}/`}>
+          <a class="unit-card fade-up" href={`/g${grade}-s${semester}/u${u}/`}>
             <div class="unit-num">Unit {u}</div>
             <div class="unit-meta">
               <span class="meta-tag">📚 {unitStats.get(u) ?? 0} 词</span>
